@@ -1,0 +1,14 @@
+__pycache__/
+.ipynb_checkpoints/
+# Large size
+*.png
+*.pdf
+/experiments
+/tl_experiments
+# Keep only the final version to avoid confusion
+/ml_experiments/augmentation_cubic_boltzmann/geom_ads/
+/Tobacco_tl_experiments
+/playground/embeddings/
+/playground/tsne_embeddings/
+/playground/stats/
+/playground/lightning_logs/

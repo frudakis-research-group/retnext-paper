@@ -1,0 +1,87 @@
+seed_everything: 42
+
+trainer:
+  max_epochs: 250
+  accelerator: 'gpu'
+  default_root_dir: 'ml_experiments/augmentation_cubic_boltzmann/geom_ads/'
+  callbacks:
+    class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      filename: 'best'
+      monitor: 'val_R2Score'
+      save_top_k: 1
+      mode: 'max'
+
+data:
+  path_to_X: '/home/asarikas/databases/MOFXDB/hMOF/voxels_data_GS32_CB30/'
+  path_to_Y: '/home/asarikas/databases/MOFXDB/hMOF/standardized_hMOF.csv'
+  index_col: 'name'
+  labels:
+    - 'lcd'
+    - 'pld'
+    - 'void_fraction'
+    - 'surface_area_m2g'
+    - 'surface_area_m2cm3'
+    - 'CarbonDioxide_1_298K_0.01bar_mol/kg'
+    - 'CarbonDioxide_1_298K_0.1bar_mol/kg'
+    - 'CarbonDioxide_1_298K_2.5bar_mol/kg'
+    - 'CarbonDioxide_1_298K_0.05bar_mol/kg'
+    #- 'CarbonDioxide_1_298K_0.5bar_mol/kg'
+    - 'Nitrogen_1_298K_0.09bar_mol/kg'
+    - 'Nitrogen_1_298K_0.9bar_mol/kg'
+    - 'Methane_1_298K_2.5bar_mol/kg'
+    - 'Methane_1_298K_4.5bar_mol/kg'
+    #- 'Methane_1_298K_0.05bar_mol/kg'
+    - 'Methane_1_298K_0.5bar_mol/kg'
+    - 'Methane_1_298K_0.9bar_mol/kg'
+    - 'Methane_1_298K_35bar_cm3(STP)/cm3'
+    #- 'Xenon_0.2_273K_1bar_mol/kg'
+    #- 'Krypton_0.8_273K_1bar_mol/kg'
+    #- 'Xenon_0.2_273K_5bar_mol/kg'
+    #- 'Krypton_0.8_273K_5bar_mol/kg'
+    #- 'Xenon_0.2_273K_10bar_mol/kg'
+    #- 'Krypton_0.8_273K_10bar_mol/kg'
+    #- 'Hydrogen_1_77K_2bar_g/l'
+    - 'Hydrogen_1_77K_100bar_g/l'
+  train_size: Null
+  train_transform_x:
+    class_path: torchvision.transforms.v2.Compose
+    init_args:
+      transforms:
+        - class_path: retnext.transforms.AddChannelDim
+        - class_path: retnext.transforms.BoltzmannFactor
+        - class_path: torchvision.transforms.v2.RandomChoice
+          init_args:
+            transforms:
+              - class_path: torch.nn.Identity
+              - class_path: retnext.transforms.RandomRotate90
+              - class_path: retnext.transforms.RandomFlip
+              - class_path: retnext.transforms.RandomReflect
+  eval_transform_x:
+    class_path: torchvision.transforms.v2.Compose
+    init_args:
+      transforms:
+        - class_path: retnext.transforms.AddChannelDim
+        - class_path: retnext.transforms.BoltzmannFactor
+  train_batch_size: 32
+  eval_batch_size: 256
+  drop_last: True
+  shuffle: True
+  config_dataloaders:
+    pin_memory: True
+    num_workers: 8
+    persistent_workers: True
+
+model:
+  criterion:
+    class_path: torch.nn.MSELoss
+  metric:
+    class_path: torchmetrics.MetricCollection
+    init_args:
+      metrics:
+        - class_path: torchmetrics.R2Score
+        - class_path: torchmetrics.MeanAbsoluteError
+  model:
+    class_path: retnext.modules.RetNeXt
+    init_args:
+      n_outputs: 17

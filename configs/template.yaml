@@ -1,0 +1,38 @@
+trainer:
+  max_epochs: 50
+  accelerator: 'gpu'
+  default_root_dir: null  # OVERWRITE THIS
+  callbacks:
+    class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      filename: 'best'
+      monitor: 'val_R2Score'
+      save_top_k: 1
+      mode: 'max'
+
+data:
+  path_to_X: null
+  path_to_Y: '/home/asarikas/databases/MOFXDB/hMOF/hMOF.csv'
+  index_col: 'name'
+  labels: null
+  train_size: Null  # It will be overwritten on the fly
+  train_batch_size: 32
+  eval_batch_size: 256
+  drop_last: True
+  shuffle: True
+  config_dataloaders:
+    pin_memory: True
+    num_workers: 8
+    persistent_workers: True
+
+model:
+  criterion:
+    class_path: torch.nn.MSELoss
+  metric:
+    class_path: torchmetrics.MetricCollection
+    init_args:
+      metrics:
+        r2: {class_path: torchmetrics.R2Score}
+        mae: {class_path: torchmetrics.MeanAbsoluteError}
+  model:
+    class_path: retnext.modules.RetNeXt

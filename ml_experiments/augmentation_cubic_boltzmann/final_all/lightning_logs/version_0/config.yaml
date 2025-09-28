@@ -1,0 +1,169 @@
+# lightning.pytorch==2.5.0.post0
+seed_everything: 0
+trainer:
+  accelerator: gpu
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: null
+  logger: null
+  callbacks:
+    class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: null
+      filename: best
+      monitor: val_R2Score
+      verbose: false
+      save_last: null
+      save_top_k: 1
+      save_weights_only: false
+      mode: max
+      auto_insert_metric_name: true
+      every_n_train_steps: null
+      train_time_interval: null
+      every_n_epochs: null
+      save_on_train_epoch_end: null
+      enable_version_counter: true
+  fast_dev_run: false
+  max_epochs: 500
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: ml_experiments/augmentation_cubic_boltzmann/final_all/
+model:
+  model:
+    class_path: retnext.modules.RetNeXt
+    init_args:
+      in_channels: 1
+      n_outputs: 26
+      avg_global_pool: true
+  criterion:
+    class_path: torch.nn.MSELoss
+    init_args:
+      size_average: null
+      reduce: null
+      reduction: mean
+  metric:
+    class_path: torchmetrics.MetricCollection
+    init_args:
+      metrics:
+      - class_path: torchmetrics.R2Score
+        init_args:
+          adjusted: 0
+          multioutput: uniform_average
+          compute_on_cpu: false
+          dist_sync_on_step: false
+          process_group: null
+          dist_sync_fn: null
+          distributed_available_fn: null
+          sync_on_compute: true
+          compute_with_cache: true
+      - class_path: torchmetrics.MeanAbsoluteError
+        init_args:
+          num_outputs: 1
+          compute_on_cpu: false
+          dist_sync_on_step: false
+          process_group: null
+          dist_sync_fn: null
+          distributed_available_fn: null
+          sync_on_compute: true
+          compute_with_cache: true
+      prefix: null
+      postfix: null
+      compute_groups: true
+  config_optimizer: null
+  config_scheduler: null
+data:
+  path_to_X: /home/asarikas/databases/MOFXDB/hMOF/voxels_data_GS32_CB30/
+  path_to_Y: /home/asarikas/databases/MOFXDB/hMOF/standardized_hMOF.csv
+  index_col: name
+  labels:
+  - lcd
+  - pld
+  - void_fraction
+  - surface_area_m2g
+  - surface_area_m2cm3
+  - CarbonDioxide_1_298K_0.01bar_mol/kg
+  - CarbonDioxide_1_298K_0.1bar_mol/kg
+  - CarbonDioxide_1_298K_2.5bar_mol/kg
+  - CarbonDioxide_1_298K_0.05bar_mol/kg
+  - CarbonDioxide_1_298K_0.5bar_mol/kg
+  - Nitrogen_1_298K_0.09bar_mol/kg
+  - Nitrogen_1_298K_0.9bar_mol/kg
+  - Methane_1_298K_2.5bar_mol/kg
+  - Methane_1_298K_4.5bar_mol/kg
+  - Methane_1_298K_0.05bar_mol/kg
+  - Methane_1_298K_0.5bar_mol/kg
+  - Methane_1_298K_0.9bar_mol/kg
+  - Methane_1_298K_35bar_cm3(STP)/cm3
+  - Xenon_0.2_273K_1bar_mol/kg
+  - Krypton_0.8_273K_1bar_mol/kg
+  - Xenon_0.2_273K_5bar_mol/kg
+  - Krypton_0.8_273K_5bar_mol/kg
+  - Xenon_0.2_273K_10bar_mol/kg
+  - Krypton_0.8_273K_10bar_mol/kg
+  - Hydrogen_1_77K_2bar_g/l
+  - Hydrogen_1_77K_100bar_g/l
+  train_size: null
+  train_transform_x:
+    class_path: torchvision.transforms.v2.Compose
+    init_args:
+      transforms:
+      - class_path: retnext.transforms.AddChannelDim
+      - class_path: retnext.transforms.BoltzmannFactor
+        init_args:
+          temperature: 298.0
+      - class_path: torchvision.transforms.v2.RandomChoice
+        init_args:
+          transforms:
+          - class_path: torch.nn.Identity
+          - class_path: retnext.transforms.RandomRotate90
+          - class_path: retnext.transforms.RandomFlip
+          - class_path: retnext.transforms.RandomReflect
+          p: null
+  eval_transform_x:
+    class_path: torchvision.transforms.v2.Compose
+    init_args:
+      transforms:
+      - class_path: retnext.transforms.AddChannelDim
+      - class_path: retnext.transforms.BoltzmannFactor
+        init_args:
+          temperature: 298.0
+  transform_y: null
+  shuffle: true
+  drop_last: true
+  train_batch_size: 32
+  eval_batch_size: 256
+  config_dataloaders:
+    pin_memory: true
+    num_workers: 8
+    persistent_workers: true
+optimizer: null
+lr_scheduler: null
+ckpt_path: null

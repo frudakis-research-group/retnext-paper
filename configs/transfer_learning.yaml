@@ -1,0 +1,20 @@
+trainer:
+  max_epochs: 1000
+  accelerator: 'gpu'
+  devices: 1
+  default_root_dir: 'tl_experiments/'
+  check_val_every_n_epoch: 10
+  callbacks:
+    class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      filename: 'best'
+      monitor: 'val_R2Score'
+      save_top_k: 1
+      mode: 'max'
+
+voxels_path: '/home/asarikas/databases/MOFXDB/hMOF/voxels_data_GS32_CB30'
+labels_path: '/home/asarikas/databases/MOFXDB/hMOF/hMOF.csv'
+index_col: 'name'
+target: null
+n_runs: 10
+train_sizes: [50, 100, 300, 500, 1000]
